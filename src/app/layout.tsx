@@ -1,29 +1,33 @@
 "use client";
-import { Geist, Geist_Mono } from "next/font/google";
+
 import "@/styles/globals.css";
+import AppWindow from "@/components/AppWindow";
+import { readDir, BaseDirectory } from "@tauri-apps/plugin-fs"
+import { redirect } from "next/navigation";
+import { useEffect } from "react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+async function checkOsuDir() {
+    const osuFolder = await readDir("osu!", { baseDir: BaseDirectory.LocalData as BaseDirectory });
+    const requiredFiles = ["osu!.exe", "Songs", "Replays", "Skins"]
+    const isPathCorrect = osuFolder.filter(filename => requiredFiles.includes(filename.name)).length === requiredFiles.length
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+    return isPathCorrect;
+}
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <body
+                className={`antialiased`}
+            >
+                <AppWindow>
+                    {children}
+                </AppWindow>
+            </body>
+        </html>
+    );
 }
