@@ -46,7 +46,7 @@ const Cursor = ({
     }, [frames, timeElapsed]);
 
     return (
-        <pixiContainer x={cursorPos.x} y={cursorPos.y}>
+        <pixiContainer x={cursorPos.x} y={cursorPos.y} zIndex={Infinity}>
             <pixiSprite texture={cursorTexture} anchor={0.5} />
         </pixiContainer>
     );

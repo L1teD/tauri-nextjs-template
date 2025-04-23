@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useState } from "react";
-import { readFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
 import { Beatmap, BeatmapDecoder, Score, ScoreDecoder } from "osu-parsers";
 import ReplayViewer from "@/components/ReplayViewer";
 import { Application, extend } from "@pixi/react";
 import { Container, Graphics, Sprite } from "pixi.js";
+import { circleSizeToScale } from "@osujs/math";
 
 extend({ Container, Graphics, Sprite });
 
@@ -18,14 +19,14 @@ const Page = () => {
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [audioVolume, setAudioVolume] = useState(0.01);
 
-    const beatmapPath = "C:/Users/L1te/AppData/Local/osu!/Songs/866472 Save Me - Avenged Sevenfold/Avenged Sevenfold - Save Me (Sersh4nt) [Nightmare].osu";
-    const scorePath = "C:/Users/L1te/AppData/Local/osu!/Replays/a1_test_replay.osr";
-    const audioPath = "C:/Users/L1te/AppData/Local/osu!/Songs/866472 Save Me - Avenged Sevenfold/audio.mp3";
+    const beatmapPath = "osu!/Songs/594170 Avenged Sevenfold - Save Me/Avenged Sevenfold - Save Me (Drummer) [Tragedy].osu";
+    const scorePath = "osu!/Replays/L1te_ - Avenged Sevenfold - Save Me [Tragedy] (2023-11-02) Osu.osr";
+    const audioPath = "osu!/Songs/594170 Avenged Sevenfold - Save Me/audio.mp3";
 
     useEffect(() => {
         async function loadData() {
-            const scoreBuffer = await readFile(scorePath);
-            const beatmapBuffer = await readFile(beatmapPath);
+            const scoreBuffer = await readFile(scorePath, { baseDir: BaseDirectory.LocalData });
+            const beatmapBuffer = await readFile(beatmapPath, { baseDir: BaseDirectory.LocalData });
 
             const scoreDecoder = new ScoreDecoder();
             const beatmapDecoder = new BeatmapDecoder();
@@ -36,7 +37,7 @@ const Page = () => {
             setScore(score);
             setBeatmap(beatmap);
 
-            const audioBuffer = await readFile(audioPath);
+            const audioBuffer = await readFile(audioPath, { baseDir: BaseDirectory.LocalData });
             const blob = new Blob([audioBuffer], { type: 'audio/mp3' });
             const url = URL.createObjectURL(blob);
             setAudioUrl(url);
@@ -100,56 +101,25 @@ const Page = () => {
     };
 
     const viewerWidth = 1280
-    const viewerHeight = 600
+    const viewerHeight = 720
 
-    // Размеры игрового поля
-    const fieldWidth = 512;
-    const fieldHeight = 384;
-
-    // Функция для вычисления масштаба
-    const getScale = (width: number, height: number) => {
-        const scaleX = width / fieldWidth;
-        const scaleY = height / fieldHeight;
-        return Math.min(scaleX, scaleY); // Используем минимальный масштаб
-    };
-
-    // Вычисляем размер и позицию
-    const scale = getScale(viewerWidth, viewerHeight);
-    const scaledWidth = fieldWidth * scale;
-    const scaledHeight = fieldHeight * scale;
-    const x = (viewerWidth - scaledWidth) / 2;
-    const y = (viewerHeight - scaledHeight) / 2;
 
     return beatmap && score ? (
         <div>
             <Application
                 sharedTicker
                 width={viewerWidth}
-                height={720}
+                height={viewerHeight}
                 className="m-5 rounded-xl"
             >
-                <pixiContainer x={x} y={y + ((720 - 600) / 2)} scale={1}>
-                    {/* Рисуем белую рамку */}
-                    <pixiGraphics
-                        draw={graphics => {
-                            graphics.clear();
-                            graphics.setStrokeStyle({
-                                width: 2,
-                                color: 0xFFFFFF,
-                                alpha: 1
-                            }); // Толщина линии и цвет
-                            graphics.rect(0, 0, scaledWidth, scaledHeight); // Прямоугольник
-                            graphics.stroke()
-                        }}
-                    />
+                <pixiContainer x={100} y={100}>
                     <ReplayViewer
                         timeElapsed={timeElapsed}
                         setTimeElapsed={setTimeElapsed}
                         beatmap={beatmap}
                         score={score}
                         isPaused={isPaused}
-                        togglePause={togglePause}
-                        scale={viewerHeight / fieldHeight}
+                        scale={1}
                     />
                 </pixiContainer>
             </Application>

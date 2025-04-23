@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import Cursor from "./Cursor"
 import Hitcircle from "./Hitcircle"
 import { useTick } from "@pixi/react"
+import PlayfieldBorder from "./PlayfieldBorder"
 
 const ReplayViewer = ({ timeElapsed, setTimeElapsed, isPaused, beatmap, score, scale }: {
     timeElapsed: number,
@@ -15,7 +16,7 @@ const ReplayViewer = ({ timeElapsed, setTimeElapsed, isPaused, beatmap, score, s
 }) => {
     const visibleHitObjects = useMemo(() => {
         return beatmap.hitObjects.filter(
-            (obj) => obj.startTime > timeElapsed - 1000 && obj.startTime < timeElapsed + 1000
+            (obj) => obj.startTime > timeElapsed - 3000 && obj.startTime < timeElapsed + 3000
         );
     }, [beatmap.hitObjects, timeElapsed]);
 
@@ -24,9 +25,7 @@ const ReplayViewer = ({ timeElapsed, setTimeElapsed, isPaused, beatmap, score, s
     })
 
     return (
-        <pixiContainer
-            scale={scale}
-        >
+        <pixiContainer>
             {visibleHitObjects.map((hitObject, i) => (
                 <Hitcircle
                     key={i}
@@ -35,6 +34,9 @@ const ReplayViewer = ({ timeElapsed, setTimeElapsed, isPaused, beatmap, score, s
                     startTime={hitObject.startTime}
                     timeElapsed={timeElapsed}
                     type={hitObject.hitType}
+                    approachRate={beatmap.difficulty.approachRate}
+                    circleSize={beatmap.difficulty.circleSize}
+                    zIndex={beatmap.totalLength - hitObject.startTime}
                 />
             ))}
 
@@ -42,6 +44,7 @@ const ReplayViewer = ({ timeElapsed, setTimeElapsed, isPaused, beatmap, score, s
                 frames={score.replay.frames}
                 timeElapsed={timeElapsed}
             />
+            <PlayfieldBorder />
         </pixiContainer>
     );
 };
